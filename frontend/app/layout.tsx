@@ -22,6 +22,12 @@ export const metadata: Metadata = {
         height: 630,
         alt: 'Big Bird Portfolios',
       },
+      {
+        url: '/android-chrome-512x512.png',
+        width: 512,
+        height: 512,
+        alt: 'Big Bird Portfolios',
+      },
     ],
     locale: 'en_US',
     type: 'website',
@@ -31,6 +37,17 @@ export const metadata: Metadata = {
     title: 'Big Bird Portfolios',
     description: 'Big Bird Portfolios',
     images: ['/og-image.png'],
+  },
+  appleWebApp: {
+    title: 'Big Bird Portfolios',
+    statusBarStyle: 'default',
+    capable: true,
+  },
+  other: {
+    'apple-mobile-web-app-title': 'Big Bird Portfolios',
+    'application-name': 'Big Bird Portfolios',
+    'msapplication-TileColor': '#ffffff',
+    'theme-color': '#ffffff',
   },
 }
 

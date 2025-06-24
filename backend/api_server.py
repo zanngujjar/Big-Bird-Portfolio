@@ -81,18 +81,20 @@ def get_ticker_prices(symbol):
         end_date = request.args.get('end_date')
         limit = request.args.get('limit', type=int)
         
+        # Call the database method which now returns (date, close_price) tuples
         prices = db.get_ticker_prices(symbol.upper(), start_date, end_date)
         
         # Apply limit if specified
         if limit and limit > 0:
             prices = prices[-limit:]  # Get most recent prices
         
+        # --- THIS IS THE CRITICAL FIX ---
+        # Adjust mapping to expect only 2 elements (date, close_price) from each tuple
         price_list = [
             {
-                'ticker_id': p[0],
-                'ticker_symbol': p[1],
-                'date': p[2],
-                'close_price': p[3]
+                'date': str(p[0]),         # p[0] is the date
+                'close_price': float(p[1]) # p[1] is the close_price
+                # Removed 'ticker_id' and 'ticker_symbol' as they are no longer returned by database.py
             } for p in prices
         ]
         

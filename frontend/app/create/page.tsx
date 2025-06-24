@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { TrendingUp, Search, ChevronLeft, ChevronRight, DollarSign, Loader2 } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, DollarSign, Loader2 } from "lucide-react"
 import Link from "next/link"
 
 // API base URL
-const API_BASE_URL = "http://localhost:5000"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 // Ticker interface
 interface Ticker {
@@ -107,7 +107,7 @@ export default function CreatePortfolio() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
-              <TrendingUp className="h-8 w-8 text-blue-500" />
+              <img src="/favicon-32x32.png" alt="Big Bird Portfolios Logo" className="h-8 w-8" />
               <span className="text-xl font-bold">Big Bird Portfolios</span>
             </Link>
           </div>

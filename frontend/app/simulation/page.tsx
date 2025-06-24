@@ -14,7 +14,7 @@ const LINE_OPACITY = 0.35
 const LABEL_COLOR = "#9CA3AF"
 const LABEL_FONT = "12px sans-serif"
 const margin = { top: 20, right: 20, bottom: 40, left: 80 };
-const API_BASE_URL = "http://localhost:5000"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 // --- Helper Functions ---
 const formatPrice = (price: number) => {
@@ -158,7 +158,7 @@ export default function SimulationPage() {
                 setStatusText("Fetching historical price data...");
                 const samplePrices: Record<string, number[]> = {};
                 const startDate = new Date();
-                startDate.setFullYear(startDate.getFullYear() - 3);
+                startDate.setFullYear(startDate.getFullYear() - 5);
                 const startDateString = startDate.toISOString().split('T')[0];
                 await Promise.all(
                     Object.keys(allocations).map(async (ticker) => {

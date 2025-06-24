@@ -1,9 +1,14 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { TrendingUp, BarChart3, Target, Zap } from "lucide-react"
+import { BarChart3, Target, Zap, ChevronDown, ChevronUp } from "lucide-react"
 import Link from "next/link"
+import { useState } from "react"
 
-export default function Component() {
+export default function WelcomePage() {
+  const [showMathDetails, setShowMathDetails] = useState(false)
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
@@ -11,7 +16,7 @@ export default function Component() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-8 w-8 text-blue-500" />
+              <img src="/favicon-32x32.png" alt="Big Bird Portfolios Logo" className="h-8 w-8" />
               <span className="text-xl font-bold">Big Bird Portfolios</span>
             </div>
           </div>
@@ -85,6 +90,163 @@ export default function Component() {
                   In portfolio management, we use it to simulate how your investments might perform under various market
                   conditions, giving you a comprehensive view of potential risks and returns.
                 </p>
+              </CardContent>
+            </Card>
+
+            {/* Mathematical Details Dropdown */}
+            <Card className="bg-gray-900 border-gray-800">
+              <CardContent className="p-8">
+                <button
+                  onClick={() => setShowMathDetails(!showMathDetails)}
+                  className="flex items-center justify-between w-full text-left"
+                >
+                  <h3 className="text-2xl font-semibold text-white">Want to know more?</h3>
+                  {showMathDetails ? (
+                    <ChevronUp className="h-6 w-6 text-blue-400" />
+                  ) : (
+                    <ChevronDown className="h-6 w-6 text-blue-400" />
+                  )}
+                </button>
+
+                {showMathDetails && (
+                  <div className="mt-6 space-y-6 border-t border-gray-700 pt-6">
+                    <div>
+                      <h4 className="text-xl font-semibold text-white mb-4">Geometric Brownian Motion (GBM)</h4>
+                      <p className="text-gray-300 text-lg leading-relaxed mb-4">
+                        Our Monte Carlo simulation uses Geometric Brownian Motion to model stock price movements. This
+                        mathematical model captures both the trend (drift) and randomness (volatility) of financial
+                        markets.
+                      </p>
+                    </div>
+
+                    <div className="bg-gray-800 p-6 rounded-lg">
+                      <h5 className="text-lg font-semibold text-white mb-3">The GBM Formula</h5>
+                      <p className="text-gray-300 mb-4">The stock price at the next time step is calculated using:</p>
+                      <div className="bg-black p-6 rounded text-center border border-gray-600">
+                        <div className="text-white text-2xl font-serif leading-relaxed">
+                          <span className="italic">S</span>(<span className="italic">t</span> + Δ
+                          <span className="italic">t</span>) =<span className="italic ml-2">S</span>(
+                          <span className="italic">t</span>) ·<span className="italic ml-2">e</span>
+                          <sup className="text-lg">
+                            (<span className="italic">μ</span> − <sup>1</sup>⁄<sub>2</sub>
+                            <span className="italic">σ</span>
+                            <sup>2</sup>)Δ<span className="italic">t</span> + <span className="italic">σ</span>√(Δ
+                            <span className="italic">t</span>) · <span className="italic">Z</span>
+                          </sup>
+                        </div>
+                      </div>
+                      <div className="mt-4 text-gray-300 space-y-2">
+                        <p>
+                          <strong className="text-white">Where:</strong>
+                        </p>
+                        <ul className="list-none space-y-2 ml-4">
+                          <li>
+                            <strong className="text-blue-300 font-serif italic">S(t)</strong> = Current stock price
+                          </li>
+                          <li>
+                            <strong className="text-blue-300 font-serif italic">μ</strong> (mu) = Expected annual return
+                            (drift)
+                          </li>
+                          <li>
+                            <strong className="text-blue-300 font-serif italic">σ</strong> (sigma) = Annual volatility
+                            (standard deviation)
+                          </li>
+                          <li>
+                            <strong className="text-blue-300 font-serif">Δt</strong> = Time step (1/252 for daily steps)
+                          </li>
+                          <li>
+                            <strong className="text-blue-300 font-serif italic">Z</strong> = Random number from standard
+                            normal distribution
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-800 p-6 rounded-lg">
+                      <h5 className="text-lg font-semibold text-white mb-3">Parameter Estimation</h5>
+                      <p className="text-gray-300 mb-4">
+                        We calculate the drift (μ) and volatility (σ) from historical data using:
+                      </p>
+                      <div className="space-y-6">
+                        <div>
+                          <p className="text-gray-300 mb-3">
+                            <strong className="text-white">Daily Log Returns:</strong>
+                          </p>
+                          <div className="bg-black p-4 rounded text-center border border-gray-600">
+                            <div className="text-white text-xl font-serif">
+                              <span className="italic">r</span>
+                              <sub className="text-sm">i</sub> = ln
+                              <span className="text-lg">
+                                (
+                                <div className="inline-block mx-1">
+                                  <div className="text-center border-b border-white pb-1">
+                                    <span className="italic">S</span>
+                                    <sub className="text-sm">i</sub>
+                                  </div>
+                                  <div className="text-center pt-1">
+                                    <span className="italic">S</span>
+                                    <sub className="text-sm">i−1</sub>
+                                  </div>
+                                </div>
+                                )
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-gray-300 mb-3">
+                            <strong className="text-white">Annualized Drift:</strong>
+                          </p>
+                          <div className="bg-black p-4 rounded text-center border border-gray-600">
+                            <div className="text-white text-xl font-serif">
+                              <span className="italic">μ</span> = <span className="italic">r̄</span> × 252
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-gray-300 mb-3">
+                            <strong className="text-white">Annualized Volatility:</strong>
+                          </p>
+                          <div className="bg-black p-4 rounded text-center border border-gray-600">
+                            <div className="text-white text-xl font-serif">
+                              <span className="italic">σ</span> = <span className="italic">σ</span>
+                              <sub className="text-sm">daily</sub> × √252
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-800 p-6 rounded-lg">
+                      <h5 className="text-lg font-semibold text-white mb-3">Random Number Generation</h5>
+                      <p className="text-gray-300 mb-4">
+                        We use the Box-Muller transform to generate standard normal random numbers:
+                      </p>
+                      <div className="bg-black p-4 rounded text-center border border-gray-600">
+                        <div className="text-white text-xl font-serif">
+                          <span className="italic">Z</span> = √(−2 ln(<span className="italic">U</span>
+                          <sub className="text-sm">1</sub>)) cos(2π<span className="italic">U</span>
+                          <sub className="text-sm">2</sub>)
+                        </div>
+                      </div>
+                      <p className="text-gray-300 mt-3 text-sm">
+                        Where <span className="italic font-serif">U</span>
+                        <sub>1</sub> and <span className="italic font-serif">U</span>
+                        <sub>2</sub> are independent uniform random variables between 0 and 1.
+                      </p>
+                    </div>
+
+                    <div className="bg-blue-900/20 border border-blue-500/30 p-6 rounded-lg">
+                      <h5 className="text-lg font-semibold text-blue-300 mb-3">Why This Works</h5>
+                      <p className="text-gray-300 leading-relaxed">
+                        This mathematical model captures the essential characteristics of stock prices: they tend to
+                        grow over time (drift) but with random fluctuations (volatility). By running thousands of
+                        simulations with different random outcomes, we can estimate the probability distribution of your
+                        portfolio's future value.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

@@ -17,13 +17,7 @@ export const metadata: Metadata = {
     siteName: 'Big Bird Portfolios',
     images: [
       {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Big Bird Portfolios',
-      },
-      {
-        url: '/android-chrome-512x512.png',
+        url: 'https://bigbirdportfolios.com/og-image.png',
         width: 512,
         height: 512,
         alt: 'Big Bird Portfolios',
@@ -33,10 +27,10 @@ export const metadata: Metadata = {
     type: 'website',
   },
   twitter: {
-    card: 'summary_large_image',
+    card: 'summary',
     title: 'Big Bird Portfolios',
     description: 'Big Bird Portfolios',
-    images: ['/og-image.png'],
+    images: ['https://bigbirdportfolios.com/og-image.png'],
   },
   appleWebApp: {
     title: 'Big Bird Portfolios',

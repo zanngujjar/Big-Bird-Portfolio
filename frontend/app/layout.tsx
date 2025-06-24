@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     siteName: 'Big Bird Portfolios',
     images: [
       {
-        url: 'https://bigbirdportfolios.com/og-image.png',
+        url: 'https://big-bird-portfolio-frontend.onrender.com/og-image.png',
         width: 512,
         height: 512,
         alt: 'Big Bird Portfolios',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     card: 'summary',
     title: 'Big Bird Portfolios',
     description: 'Big Bird Portfolios',
-    images: ['https://bigbirdportfolios.com/og-image.png'],
+    images: ['https://big-bird-portfolio-frontend.onrender.com/og-image.png'],
   },
   appleWebApp: {
     title: 'Big Bird Portfolios',

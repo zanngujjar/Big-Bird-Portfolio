@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { AuthProvider } from '@/lib/auth'
+import { PortfolioProvider } from '@/lib/portfolios'
 
 export const metadata: Metadata = {
   title: 'Big Bird Portfolios',
@@ -52,7 +54,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>
+          <PortfolioProvider>
+            {children}
+          </PortfolioProvider>
+        </AuthProvider>
+      </body>
     </html>
   )
 }

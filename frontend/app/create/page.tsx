@@ -8,9 +8,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Search, ChevronLeft, ChevronRight, DollarSign, Loader2 } from "lucide-react"
 import Link from "next/link"
+import Header from "@/components/header"
 
 // API base URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+const API_BASE_URL = "http://localhost:5000"
 
 // Ticker interface
 interface Ticker {
@@ -103,16 +104,7 @@ export default function CreatePortfolio() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <header className="border-b border-gray-800">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <img src="/favicon-32x32.png" alt="Big Bird Portfolios Logo" className="h-8 w-8" />
-              <span className="text-xl font-bold">Big Bird Portfolios</span>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">

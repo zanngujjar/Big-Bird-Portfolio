@@ -8,6 +8,8 @@ import { ArrowLeft, Download, RotateCcw } from "lucide-react"
 import Link from "next/link"
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Line } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import Header from "@/components/header"
+import SavePortfolioDialog from "@/components/save-portfolio-dialog"
 
 const formatCurrency = (value: number) => {
     if (!isFinite(value)) return "$0";
@@ -49,16 +51,30 @@ export default function FinalResultsPage() {
     const [summary, setSummary] = useState<any>(null);
     const [riskMetrics, setRiskMetrics] = useState<any>(null);
     const [initialAmount, setInitialAmount] = useState<number | null>(null);
+    const [portfolioConfig, setPortfolioConfig] = useState<any>(null);
+    const [simulationData, setSimulationData] = useState<any>(null);
 
   useEffect(() => {
         // This logic now correctly reads the final values and performs all calculations.
         const finalValuesRaw = sessionStorage.getItem('simulationFinalValues');
         const initialAmountRaw = sessionStorage.getItem('simulationInitialAmount');
+        const portfolioConfigRaw = localStorage.getItem('portfolioConfig');
 
         if (finalValuesRaw && initialAmountRaw) {
             const finalValues: number[] = JSON.parse(finalValuesRaw);
             const initial = Number(initialAmountRaw);
             setInitialAmount(initial);
+            
+            // Store simulation data for saving
+            setSimulationData({
+                finalValues,
+                initialAmount: initial,
+            });
+
+            // Get portfolio configuration
+            if (portfolioConfigRaw) {
+                setPortfolioConfig(JSON.parse(portfolioConfigRaw));
+            }
             
             finalValues.sort((a, b) => a - b); 
 
@@ -104,6 +120,14 @@ export default function FinalResultsPage() {
         percentile_95: { label: "95th Percentile", color: "hsl(var(--chart-3))" },
     };
 
+    const handlePortfolioSaved = (portfolioId: string) => {
+        // Show success message or redirect to my portfolios
+        const showSuccess = confirm("Portfolio saved successfully! Would you like to view your saved portfolios?");
+        if (showSuccess) {
+            router.push("/my-portfolios");
+        }
+    };
+
     if (!summary || !riskMetrics || !initialAmount) {
         return (
             <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -114,34 +138,53 @@ export default function FinalResultsPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <header className="border-b border-gray-800">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <img src="/favicon-32x32.png" alt="Big Bird Portfolios Logo" className="h-8 w-8" />
-                            <span className="text-xl font-bold">Big Bird Portfolios</span>
-            </Link>
-                        <div className="flex gap-2">
-                             <Button variant="outline" className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700" onClick={() => router.back()} >
-                                <RotateCcw className="h-4 w-4 mr-2" />
-                                Run Again
-                             </Button>
-            <Link href="/create">
-              <Button variant="outline" className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                                    New Portfolio
-              </Button>
-            </Link>
-                        </div>
-          </div>
-        </div>
-      </header>
+      <Header 
+        showBackButton={true} 
+        backButtonText="New Portfolio" 
+        backButtonHref="/create" 
+      />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
-                        <h1 className="text-3xl lg:text-4xl font-bold mb-4">Portfolio Analysis Results</h1>
-                        <p className="text-gray-300 text-lg">Complete analysis of 1,000 Monte Carlo simulations over 5 years</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold mb-4">Portfolio Analysis Results</h1>
+                <p className="text-gray-300 text-lg">Complete analysis of 1,000 Monte Carlo simulations over 5 years</p>
+              </div>
+              <div className="flex gap-3">
+                {portfolioConfig && summary && riskMetrics && simulationData && (
+                  <SavePortfolioDialog
+                    portfolioData={{
+                      allocations: portfolioConfig.allocations,
+                      portfolioAmount: portfolioConfig.portfolioAmount,
+                      lookbackPeriod: portfolioConfig.lookbackPeriod,
+                      results: {
+                        expectedValue: summary.expectedValue,
+                        worstCase: summary.worstCase,
+                        bestCase: summary.bestCase,
+                        expectedReturn: summary.expectedReturn,
+                        probOfPositiveReturn: riskMetrics.probOfPositiveReturn,
+                        probOfReturnGreaterThan10: riskMetrics.probOfReturnGreaterThan10,
+                        probOfReturnGreaterThan20: riskMetrics.probOfReturnGreaterThan20,
+                        probOfLossGreaterThan10: riskMetrics.probOfLossGreaterThan10,
+                        probOfLossGreaterThan20: riskMetrics.probOfLossGreaterThan20,
+                      },
+                      simulationData,
+                    }}
+                    onSaved={handlePortfolioSaved}
+                  />
+                )}
+                <Button
+                  variant="outline"
+                  className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+                  onClick={() => router.back()}
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Run Again
+                </Button>
+              </div>
+            </div>
           </div>
 
                     <div className="grid md:grid-cols-3 gap-6 mb-8">

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import Link from "next/link"
+import Header from "@/components/header"
 
 // --- Constants ---
 const CANVAS_BG = "#111827"
@@ -14,7 +15,7 @@ const LINE_OPACITY = 0.35
 const LABEL_COLOR = "#9CA3AF"
 const LABEL_FONT = "12px sans-serif"
 const margin = { top: 20, right: 20, bottom: 40, left: 80 };
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+const API_BASE_URL = "http://localhost:5000"
 
 // --- Helper Functions ---
 const formatPrice = (price: number) => {
@@ -256,7 +257,7 @@ export default function SimulationPage() {
 
     return (
         <div className="min-h-screen bg-black text-white">
-             <header className="border-b border-gray-800" />
+             <Header />
              <div className="w-screen px-0 py-4 overflow-x-auto">
                  <Card className="bg-gray-900 border-gray-800 mb-4">
                      <CardHeader><CardTitle className="text-white">Simulation Progress</CardTitle></CardHeader>

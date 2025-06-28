@@ -117,7 +117,14 @@ export default function SavePortfolioDialog({ portfolioData, onSaved }: SavePort
           {error && (<Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>)}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={isSaving}>Cancel</Button>
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={isSaving}
+            className="bg-gray-200 text-gray-800 hover:bg-gray-300"
+          >
+            Cancel
+          </Button>
           <Button onClick={handleSave} disabled={isSaving} className="bg-green-600 hover:bg-green-700">
             {isSaving ? "Saving..." : "Save Portfolio"}
           </Button>

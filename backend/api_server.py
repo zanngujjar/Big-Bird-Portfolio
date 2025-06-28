@@ -5,6 +5,7 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 from database import BigBird_portfolio_database
 import json
 import os   
+import psycopg2
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend integration
@@ -13,7 +14,7 @@ CORS(app)  # Enable CORS for frontend integration
 db = BigBird_portfolio_database()
 
 # Secret key for JWT. In production, use a strong, randomly generated key stored in an environment variable.
-app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY") 
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "super-secret-dev-key") 
 
 # --- Initializations ---
 bcrypt = Bcrypt(app)
@@ -61,6 +62,9 @@ def signup():
             'access_token': access_token,
             'user': user_data
         }), 201
+    except psycopg2.IntegrityError as e:
+        # This error is raised when a unique constraint (like for email or username) is violated.
+        return jsonify({'success': False, 'error': 'This email or username is already taken.'}), 409
     except Exception as e:
         return jsonify({'success': False, 'error': 'An internal error occurred during signup.'}), 500
 
@@ -161,6 +165,29 @@ def get_user_portfolios():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
         
+
+@app.route('/api/portfolios/<string:portfolio_id>', methods=['GET'])
+@jwt_required()
+def get_portfolio_by_id(portfolio_id):
+    """Fetches a single portfolio by its ID."""
+    current_user_id = get_jwt_identity()
+    try:
+        portfolio = db.get_portfolio_by_id(portfolio_id, current_user_id)
+        if portfolio:
+            # Convert the row to a dict and handle JSON and date fields
+            portfolio_dict = dict(portfolio)
+            if 'allocations' in portfolio_dict and isinstance(portfolio_dict['allocations'], str):
+                portfolio_dict['allocations'] = json.loads(portfolio_dict['allocations'])
+            if 'simulation_data' in portfolio_dict and isinstance(portfolio_dict['simulation_data'], str):
+                portfolio_dict['simulation_data'] = json.loads(portfolio_dict['simulation_data'])
+            if portfolio_dict.get('created_at'):
+                portfolio_dict['created_at'] = portfolio_dict['created_at'].isoformat()
+            
+            return jsonify({'success': True, 'data': portfolio_dict})
+        else:
+            return jsonify({'success': False, 'error': 'Portfolio not found or permission denied'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/portfolios/<string:portfolio_id>', methods=['DELETE'])
 @jwt_required()

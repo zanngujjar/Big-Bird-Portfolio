@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false)
     }
   }
-  
+
   const setAuthenticatedSession = (user: User, token: string) => {
     setUser(user);
     setToken(token);

@@ -331,6 +331,20 @@ class BigBird_portfolio_database:
         except Exception as e:
             print(f"Error getting portfolios for user {user_id}: {e}")
             return []
+
+    def get_portfolio_by_id(self, portfolio_id: str, user_id: str) -> Optional[Dict]:
+        """Fetches a single portfolio by its ID, ensuring it belongs to the user."""
+        try:
+            with self._get_cursor() as cursor:
+                cursor.execute(
+                    "SELECT * FROM portfolios WHERE id = %s AND user_id = %s",
+                    (portfolio_id, user_id)
+                )
+                portfolio = cursor.fetchone()
+                return portfolio
+        except Exception as e:
+            print(f"Error getting portfolio {portfolio_id} for user {user_id}: {e}")
+            return None
             
 
     # It's crucial to remove or comment out the __del__ method.

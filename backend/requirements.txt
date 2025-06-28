@@ -1,4 +1,17 @@
+# Flask and extensions
 flask>=2.0.0
 flask-cors>=3.0.0
-gunicorn
-psycopg2-binary
+flask-bcrypt>=1.0.0
+flask-jwt-extended>=4.0.0
+
+# Database
+psycopg2-binary>=2.9.0
+
+# Web server
+gunicorn>=20.0.0
+
+# Standard library imports (no additional packages needed)
+# - json
+# - os
+# - uuid
+# - typing

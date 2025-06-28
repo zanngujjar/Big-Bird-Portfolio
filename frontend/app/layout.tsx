@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { AuthProvider } from '@/lib/auth'
 import { PortfolioProvider } from '@/lib/portfolios'
+import { Toaster } from "@/components/ui/sonner"
 
 export const metadata: Metadata = {
   title: 'Big Bird Portfolios',
@@ -58,6 +59,7 @@ export default function RootLayout({
         <AuthProvider>
           <PortfolioProvider>
             {children}
+            <Toaster richColors theme="dark" />
           </PortfolioProvider>
         </AuthProvider>
       </body>

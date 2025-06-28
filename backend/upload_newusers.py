@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 # This is where your DATABASE_URL should be stored securely.
 load_dotenv() 
 
-DATABASE_URL = "postgresql://bigbirdportfolios_user:odAKAqHkrxCpiyvDAG7BE5vHyjGxgdap@dpg-d1c5a26mcj7s73e4dnm0-a.ohio-postgres.render.com/bigbirdportfolios"
+DATABASE_URL = ""
 
 # --- SQL Command to Create the Users Table ---
 # This table stores all information about a user account.

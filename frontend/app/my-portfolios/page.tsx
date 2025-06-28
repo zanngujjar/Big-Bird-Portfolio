@@ -10,6 +10,7 @@ import Link from "next/link"
 import Header from "@/components/header"
 import { useAuth } from "@/lib/auth"
 import { usePortfolios, type NewPortfolioPayload } from "@/lib/portfolios"
+import { toast } from "sonner"
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
@@ -53,7 +54,7 @@ export default function MyPortfoliosPage() {
             await savePortfolio(portfolioToSave);
           } catch (error) {
             console.error("Error auto-saving pending portfolio:", error);
-          } 
+          }
         }
       }
     };
@@ -61,17 +62,24 @@ export default function MyPortfoliosPage() {
   }, [user, isAuthLoading, savePortfolio]);
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure? This cannot be undone.")) {
-      return;
-    }
-    setDeletingId(id);
-    try {
-      await deletePortfolio(id);
-    } catch (error) {
-      console.error("Failed to delete portfolio", error);
-    } finally {
-      setDeletingId(null);
-    }
+    toast.warning("Are you sure? This cannot be undone.", {
+      duration: 5000,
+      action: {
+        label: "Confirm Delete",
+        onClick: async () => {
+          setDeletingId(id);
+          try {
+            await deletePortfolio(id);
+            toast.success("Portfolio deleted successfully.");
+          } catch (error) {
+            console.error("Failed to delete portfolio", error);
+            toast.error("Failed to delete portfolio.");
+          } finally {
+            setDeletingId(null);
+          }
+        },
+      },
+    });
   }
 
   if (isAuthLoading) {
@@ -84,7 +92,7 @@ export default function MyPortfoliosPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">My Portfolios</h1>
-          <Link href="/#analysis">
+          <Link href="/create">
             <Button className="bg-blue-600 hover:bg-blue-700 text-white">
               <Plus className="h-4 w-4 mr-2" />
               Create New
@@ -93,13 +101,13 @@ export default function MyPortfoliosPage() {
         </div>
 
         {isPortfoliosLoading ? (
-            <div className="text-center py-20">Loading portfolios...</div>
+          <div className="text-center py-20">Loading portfolios...</div>
         ) : portfolios.length === 0 ? (
           <div className="text-center py-20 bg-gray-900/50 rounded-lg border border-dashed border-gray-700">
             <BarChart3 className="h-16 w-16 text-gray-600 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">No Saved Portfolios</h2>
             <p className="text-gray-400 mb-6">You haven't saved any portfolio analyses yet.</p>
-            <Link href="/#analysis">
+            <Link href="/create">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                 Create Your First Portfolio
               </Button>
@@ -124,30 +132,31 @@ export default function MyPortfoliosPage() {
                       <Calendar className="h-3 w-3 mr-1.5" />
                       Saved: {formatDate(portfolio.createdAt)}
                     </div>
-                    {/* --- THIS IS THE FIX: Using camelCase variables consistently --- */}
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center justify-between">
                         <span className="text-gray-300">Initial Amount:</span>
-                        <span className="font-semibold">{formatCurrency(portfolio.portfolioAmount)}</span>
+                        <span className="font-semibold text-white">{formatCurrency(portfolio.portfolioAmount)}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-300">Lookback:</span>
-                        <span className="font-semibold">{portfolio.lookbackPeriod} Years</span>
+                        <span className="font-semibold text-white">{portfolio.lookbackPeriod} Trading Days</span>
                       </div>
                       <div className="border-t border-gray-700 my-2"></div>
                       <div className="flex items-center justify-between font-bold">
                         <span className="text-gray-300">5-Yr Exp. Return:</span>
                         <span className={`${portfolio.results.expectedReturn >= 0 ? "text-green-400" : "text-red-400"}`}>
-                          {portfolio.results.expectedReturn >= 0 ? "+" : ""}{(portfolio.results.expectedReturn * 100).toFixed(1)}%
+                          {portfolio.results.expectedReturn >= 0 ? "+" : ""}{(portfolio.results.expectedReturn).toFixed(2)}%
                         </span>
                       </div>
                     </div>
                   </div>
                   <div className="flex gap-2 mt-6">
-                    <Button variant="outline" className="w-full bg-gray-800 border-gray-600 text-white hover:bg-gray-700">
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Results
-                    </Button>
+                    <Link href={`/results?id=${portfolio.id}`} className="w-full">
+                      <Button variant="outline" className="w-full bg-gray-800 border-gray-600 text-white hover:bg-gray-700">
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Results
+                      </Button>
+                    </Link>
                     <Button variant="destructive" size="icon" onClick={() => handleDelete(portfolio.id)} disabled={deletingId === portfolio.id}>
                       {deletingId === portfolio.id ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : <Trash2 className="h-4 w-4" />}
                     </Button>

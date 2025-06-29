@@ -1,4 +1,22 @@
-flask>=2.0.0
-flask-cors>=3.0.0
-gunicorn
-psycopg2-binary
+# === Web framework ===
+Flask>=2.3
+
+# === Flask extensions ===
+flask-cors>=3.0
+flask-bcrypt>=1.0
+flask-jwt-extended>=4.5
+
+# === Database driver ===
+psycopg2-binary>=2.9
+
+# === Environment variable loader ===
+python-dotenv>=1.0
+
+# === Production WSGI server ===
+gunicorn>=20.1
+
+# Standard library imports (no additional packages needed)
+# - json
+# - os
+# - uuid
+# - typing

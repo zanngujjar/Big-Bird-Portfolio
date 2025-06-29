@@ -1,13 +1,210 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
 from database import BigBird_portfolio_database
 import json
+import os   
+import psycopg2
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend integration
 
 # Initialize database connection
 db = BigBird_portfolio_database()
+
+# Secret key for JWT. In production, use a strong, randomly generated key stored in an environment variable.
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY") 
+
+if not app.config["JWT_SECRET_KEY"]:
+    raise RuntimeError("JWT_SECRET_KEY environment variable is not set")
+
+# --- Initializations ---
+bcrypt = Bcrypt(app)
+jwt = JWTManager(app)
+
+
+# --- NEW AUTHENTICATION ENDPOINTS ---
+
+@app.route('/api/auth/signup', methods=['POST'])
+def signup():
+    """Endpoint for user registration."""
+    data = request.get_json()
+    email = data.get('email')
+    username = data.get('username')
+    first_name = data.get('firstName')
+    last_name = data.get('lastName')
+    password = data.get('password')
+
+    existing_field = db.check_if_user_exists(email, username)
+    
+    # Check the result and return the specific error
+    if existing_field == 'email':
+        return jsonify({'success': False, 'error': 'Email already registered'}), 409
+    if existing_field == 'username':
+        return jsonify({'success': False, 'error': 'Username is already taken'}), 409
+    # --- END OF UPDATE ---
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    try:
+        new_user = db.create_user(email, username, first_name, last_name, hashed_password)
+        if not new_user:
+            return jsonify({'success': False, 'error': 'Failed to create user account.'}), 500
+
+        # --- THIS IS THE NEW LOGIC ---
+        # After creating the user, immediately create an access token for them.
+        access_token = create_access_token(identity=new_user['id'])
+        
+        # Prepare the user data to send back, excluding the password hash.
+        user_data = {key: new_user[key] for key in new_user.keys() if key != 'hashed_password'}
+        
+        # Return the user data AND the new access token.
+        return jsonify({
+            'success': True, 
+            'access_token': access_token,
+            'user': user_data
+        }), 201
+    except psycopg2.IntegrityError as e:
+        # This error is raised when a unique constraint (like for email or username) is violated.
+        return jsonify({'success': False, 'error': 'This email or username is already taken.'}), 409
+    except Exception as e:
+        return jsonify({'success': False, 'error': 'An internal error occurred during signup.'}), 500
+
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    """Endpoint for user login."""
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({'success': False, 'error': 'Email and password are required'}), 400
+
+    user = db.find_user_by_email(email)
+    if user and bcrypt.check_password_hash(user['hashed_password'], password):
+        # Create a JWT token. The 'identity' is the user's ID, which we'll use to identify them in protected routes.
+        access_token = create_access_token(identity=user['id'])
+        # Prepare user data to send back, excluding the password
+        user_data = {key: user[key] for key in user.keys() if key != 'hashed_password'}
+        
+        return jsonify({
+            'success': True, 
+            'access_token': access_token,
+            'user': user_data
+        })
+    else:
+        return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
+    
+
+#--- NEW AUTHENTICATION ENDPOINTS ---
+@app.route('/api/auth/me', methods=['GET'])
+@jwt_required() # Protect this route
+def get_current_user():
+    """Gets the profile of the currently logged-in user."""
+    current_user_id = get_jwt_identity()
+    user = db.find_user_by_id(current_user_id)
+    
+    if not user:
+        return jsonify({"success": False, "error": "User not found"}), 404
+
+    # Return user data, making sure to exclude the password hash
+    user_data = {key: user[key] for key in user.keys() if key != 'hashed_password'}
+    
+    return jsonify({"success": True, "user": user_data})
+
+
+# --- NEW PORTFOLIO ENDPOINTS ---
+
+@app.route('/api/portfolios', methods=['POST'])
+@jwt_required() # This decorator protects the route, requiring a valid JWT
+def save_new_portfolio():
+    """Saves a portfolio for the currently authenticated user."""
+    current_user_id = get_jwt_identity() # Get the user ID from the JWT token
+    portfolio_data = request.get_json()
+
+    if not portfolio_data:
+        return jsonify({'success': False, 'error': 'No portfolio data provided'}), 400
+
+    try:
+        portfolio_id = db.save_portfolio(current_user_id, portfolio_data)
+        if portfolio_id:
+            return jsonify({'success': True, 'portfolio_id': portfolio_id}), 201
+        else:
+            return jsonify({'success': False, 'error': 'Failed to save portfolio'}), 500
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/portfolios', methods=['GET'])
+@jwt_required()
+def get_user_portfolios():
+    current_user_id = get_jwt_identity()
+    try:
+        portfolios_from_db = db.get_portfolios_for_user(current_user_id)
+        
+        # --- THIS IS THE FIX FOR DATA CORRUPTION ---
+        results = []
+        for p_row in portfolios_from_db:
+            # 1. Convert the special database row object to a standard Python dictionary.
+            portfolio_dict = dict(p_row)
+            
+            # 2. Check if the 'allocations' key exists and is a string, then parse it.
+            if 'allocations' in portfolio_dict and isinstance(portfolio_dict['allocations'], str):
+                portfolio_dict['allocations'] = json.loads(portfolio_dict['allocations'])
+            
+            # 3. Do the same for 'simulation_data' if it exists.
+            if 'simulation_data' in portfolio_dict and isinstance(portfolio_dict['simulation_data'], str):
+                portfolio_dict['simulation_data'] = json.loads(portfolio_dict['simulation_data'])
+
+            # 4. Format the datetime object to a standardized string.
+            if portfolio_dict.get('created_at'):
+                portfolio_dict['created_at'] = portfolio_dict['created_at'].isoformat()
+            
+            results.append(portfolio_dict)
+        
+        return jsonify({'success': True, 'data': results})
+        # --- END OF FIX ---
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+        
+
+@app.route('/api/portfolios/<string:portfolio_id>', methods=['GET'])
+@jwt_required()
+def get_portfolio_by_id(portfolio_id):
+    """Fetches a single portfolio by its ID."""
+    current_user_id = get_jwt_identity()
+    try:
+        portfolio = db.get_portfolio_by_id(portfolio_id, current_user_id)
+        if portfolio:
+            # Convert the row to a dict and handle JSON and date fields
+            portfolio_dict = dict(portfolio)
+            if 'allocations' in portfolio_dict and isinstance(portfolio_dict['allocations'], str):
+                portfolio_dict['allocations'] = json.loads(portfolio_dict['allocations'])
+            if 'simulation_data' in portfolio_dict and isinstance(portfolio_dict['simulation_data'], str):
+                portfolio_dict['simulation_data'] = json.loads(portfolio_dict['simulation_data'])
+            if portfolio_dict.get('created_at'):
+                portfolio_dict['created_at'] = portfolio_dict['created_at'].isoformat()
+            
+            return jsonify({'success': True, 'data': portfolio_dict})
+        else:
+            return jsonify({'success': False, 'error': 'Portfolio not found or permission denied'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/portfolios/<string:portfolio_id>', methods=['DELETE'])
+@jwt_required()
+def delete_portfolio_by_id(portfolio_id):
+    current_user_id = get_jwt_identity()
+    try:
+        success = db.delete_portfolio(portfolio_id, current_user_id)
+        if success:
+            return jsonify({'success': True, 'message': 'Portfolio deleted successfully'}), 200
+        else:
+            return jsonify({'success': False, 'error': 'Portfolio not found or you do not have permission to delete it'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 
 @app.route('/api/health', methods=['GET'])
 def health_check():

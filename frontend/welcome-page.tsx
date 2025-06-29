@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { BarChart3, Target, Zap, ChevronDown, ChevronUp } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
+import Header from "@/components/header"
 
 export default function WelcomePage() {
   const [showMathDetails, setShowMathDetails] = useState(false)
@@ -12,16 +13,7 @@ export default function WelcomePage() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <header className="border-b border-gray-800">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <img src="/favicon-32x32.png" alt="Big Bird Portfolios Logo" className="h-8 w-8" />
-              <span className="text-xl font-bold">Big Bird Portfolios</span>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 lg:py-24">

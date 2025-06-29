@@ -12,6 +12,34 @@ body {
   }
 }
 
+.chart-card-content {
+  padding-top: 1.5rem;
+  /* equivalent to pt-6 */
+  padding-left: 0.5rem;
+  /* equivalent to px-2 */
+  padding-right: 0.5rem;
+  /* equivalent to px-2 */
+}
+
+/* For screens 640px and wider (Tailwind's 'sm' breakpoint) */
+@media (min-width: 640px) {
+  .chart-card-content {
+    padding-left: 1rem;
+    /* equivalent to sm:px-4 */
+    padding-right: 1rem;
+    /* equivalent to sm:px-4 */
+  }
+}
+
+/* For screens 768px and wider (Tailwind's 'md' breakpoint) */
+@media (min-width: 768px) {
+  .chart-card-content {
+    padding: 1.5rem;
+    /* equivalent to md:p-6 */
+  }
+}
+
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -48,6 +76,7 @@ body {
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -88,6 +117,7 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }

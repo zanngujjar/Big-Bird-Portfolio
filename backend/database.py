@@ -1,7 +1,9 @@
 import os
 import psycopg2
 import psycopg2.extras
-from typing import List, Tuple, Optional
+import uuid
+import json
+from typing import List, Tuple, Optional, Dict, List
 
 class BigBird_portfolio_database:
     def __init__(self, db_url: str = os.getenv("DATABASE_URL")):
@@ -62,7 +64,7 @@ class BigBird_portfolio_database:
                 
             # Return a new cursor from the active connection.
             # Using `with self._get_cursor() as cursor:` ensures the cursor is closed automatically.
-            return self.conn.cursor()
+            return self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         except Exception as e:
             # If an error occurs during cursor creation or reconnection, log and re-raise.
             print(f"Critical error: Could not obtain database cursor or re-establish connection: {e}")
@@ -154,17 +156,8 @@ class BigBird_portfolio_database:
                 ''', (ticker_symbol,))
                 
                 result = cursor.fetchone() # Fetch a single row of aggregate results
-                if result and result[0] > 0: # Check if any records were found (count > 0)
-                    # Convert date objects to string format for JSON serialization
-                    return {
-                        'ticker_symbol': ticker_symbol,
-                        'record_count': result[0],
-                        'min_price': result[1],
-                        'max_price': result[2],
-                        'avg_price': result[3],
-                        'start_date': str(result[4]) if result[4] else None,
-                        'end_date': str(result[5]) if result[5] else None
-                    }
+                if result and result['record_count'] > 0:
+                    return dict(result)
                 return None # Return None if no price data is found for the ticker
         except Exception as e:
             print(f"Error getting price stats for {ticker_symbol}: {e}")
@@ -221,20 +214,138 @@ class BigBird_portfolio_database:
         except Exception as e:
             print(f"Error getting database stats: {e}")
             return {}
-    
-    def close(self):
-        """
-        Closes the database connection if it is currently open.
-        This should be called explicitly when the application is shutting down.
-        """
-        if self.conn and not self.conn.closed: # Only attempt to close if connection exists and is not already closed
-            try:
-                self.conn.close() # Close the psycopg2 connection
-                self.conn = None # Set connection to None to indicate it's closed
-                print("PostgreSQL database connection closed successfully.")
-            except Exception as e:
-                # Log any errors that occur during connection closure.
-                print(f"Error closing PostgreSQL database connection: {e}")
+    # --- NEW USER METHODS ---
+
+    def create_user(self, email, username, first_name, last_name, hashed_password):
+        user_id = str(uuid.uuid4())
+        try:
+            with self._get_cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO users (id, email, username, first_name, last_name, hashed_password)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    RETURNING id, email, username, first_name, last_name, created_at;
+                """, (user_id, email, username, first_name, last_name, hashed_password))
+                new_user = cursor.fetchone()
+                self.conn.commit()
+                # No need for dict() conversion, new_user is already a DictRow
+                return new_user
+        except psycopg2.Error as e:
+            self.conn.rollback()
+            raise e
+
+    def find_user_by_email(self, email: str) -> Optional[Dict]:
+        """Finds a user by email. Correctly returns a Dict or None."""
+        try:
+            with self._get_cursor() as cursor:
+                cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+                user = cursor.fetchone()
+                # No need for dict() conversion, user is already a DictRow
+                return user
+        except Exception as e:
+            print(f"Error finding user by email: {e}")
+            return None
+
+    def find_user_by_id(self, user_id: str) -> Optional[Dict]:
+        """Finds a user by their unique ID. Correctly returns a Dict or None."""
+        try:
+            with self._get_cursor() as cursor:
+                cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+                user = cursor.fetchone()
+                # No need for dict() conversion
+                return user
+        except Exception as e:
+            print(f"Error finding user by id: {e}")
+            return None
+
+    def check_if_user_exists(self, email: str, username: str) -> Optional[str]:
+        try:
+            with self._get_cursor() as cursor:
+                cursor.execute("""
+                    SELECT 
+                        CASE WHEN email = %s THEN 'email' ELSE 'username' END as existing_field
+                    FROM users 
+                    WHERE email = %s OR username = %s
+                    LIMIT 1;
+                """, (email, username, email, username))
+                result = cursor.fetchone()
+                return result['existing_field'] if result else None
+        except Exception as e:
+            print(f"Error checking user existence: {e}")
+            return None
+
+    # --- PORTFOLIO METHODS ---
+    def save_portfolio(self, user_id, portfolio_data):
+        portfolio_id = str(uuid.uuid4())
+        try:
+            with self._get_cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO portfolios (
+                        id, user_id, name, description, portfolio_amount, lookback_period, 
+                        allocations, expected_value, worst_case, best_case, expected_return,
+                        prob_of_positive_return, prob_of_return_greater_than_10, prob_of_return_greater_than_20,
+                        prob_of_loss_greater_than_10, prob_of_loss_greater_than_20, simulation_data
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;
+                """, (
+                    portfolio_id, user_id, portfolio_data['name'], portfolio_data.get('description'), 
+                    portfolio_data['portfolioAmount'], portfolio_data['lookbackPeriod'],
+                    json.dumps(portfolio_data['allocations']), 
+                    portfolio_data['results']['expectedValue'], portfolio_data['results']['worstCase'],
+                    portfolio_data['results']['bestCase'], portfolio_data['results']['expectedReturn'],
+                    portfolio_data['results']['probOfPositiveReturn'], portfolio_data['results']['probOfReturnGreaterThan10'],
+                    portfolio_data['results']['probOfReturnGreaterThan20'], portfolio_data['results']['probOfLossGreaterThan10'],
+                    portfolio_data['results']['probOfLossGreaterThan20'], 
+                    json.dumps(portfolio_data.get('simulationData'))
+                ))
+                result = cursor.fetchone()
+                self.conn.commit()
+                return result['id'] if result else None
+        except psycopg2.Error as e:
+            self.conn.rollback()
+            raise e
+    def delete_portfolio(self, portfolio_id: str, user_id: str) -> bool:
+        """Deletes a portfolio, ensuring it belongs to the correct user."""
+        try:
+            with self._get_cursor() as cursor:
+                # The WHERE clause ensures a user can only delete their own portfolio.
+                cursor.execute("""
+                    DELETE FROM portfolios
+                    WHERE id = %s AND user_id = %s
+                """, (portfolio_id, user_id))
+                
+                # cursor.rowcount will be 1 if a row was deleted, 0 otherwise.
+                deleted_rows = cursor.rowcount
+                self.conn.commit()
+                return deleted_rows > 0
+        except psycopg2.Error as e:
+            self.conn.rollback()
+            print(f"Database error deleting portfolio: {e}")
+            raise e
+
+    def get_portfolios_for_user(self, user_id):
+        try:
+            with self._get_cursor() as cursor:
+                cursor.execute("SELECT * FROM portfolios WHERE user_id = %s ORDER BY created_at DESC", (user_id,))
+                portfolios = cursor.fetchall()
+                # No need for dict() conversion, it's already a list of DictRows
+                return portfolios if portfolios else []
+        except Exception as e:
+            print(f"Error getting portfolios for user {user_id}: {e}")
+            return []
+
+    def get_portfolio_by_id(self, portfolio_id: str, user_id: str) -> Optional[Dict]:
+        """Fetches a single portfolio by its ID, ensuring it belongs to the user."""
+        try:
+            with self._get_cursor() as cursor:
+                cursor.execute(
+                    "SELECT * FROM portfolios WHERE id = %s AND user_id = %s",
+                    (portfolio_id, user_id)
+                )
+                portfolio = cursor.fetchone()
+                return portfolio
+        except Exception as e:
+            print(f"Error getting portfolio {portfolio_id} for user {user_id}: {e}")
+            return None
+            
 
     # It's crucial to remove or comment out the __del__ method.
     # Python's garbage collection timing is unpredictable, and __del__

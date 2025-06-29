@@ -12,8 +12,7 @@ import Header from "@/components/header"
 import SavePortfolioDialog from "@/components/save-portfolio-dialog"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth"
-
-const API_URL = "http://localhost:5000";
+import { API_BASE_URL } from "@/lib/config"
 
 const formatCurrency = (value: number) => {
   if (!isFinite(value)) return "$0";
@@ -76,7 +75,7 @@ function ResultsContent() {
       }
 
       try {
-        const response = await fetch(`${API_URL}/api/portfolios/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/portfolios/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

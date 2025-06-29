@@ -14,12 +14,14 @@ CORS(app)  # Enable CORS for frontend integration
 db = BigBird_portfolio_database()
 
 # Secret key for JWT. In production, use a strong, randomly generated key stored in an environment variable.
-app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "super-secret-dev-key") 
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY") 
+
+if not app.config["JWT_SECRET_KEY"]:
+    raise RuntimeError("JWT_SECRET_KEY environment variable is not set")
 
 # --- Initializations ---
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
-db = BigBird_portfolio_database()
 
 
 # --- NEW AUTHENTICATION ENDPOINTS ---

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, createContext, useContext, type ReactNode } from "react"
+import { API_BASE_URL } from "@/lib/config"
 
 export interface User {
   id: string
@@ -32,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedToken = localStorage.getItem("accessToken")
       if (storedToken) {
         try {
-          const response = await fetch('http://localhost:5000/api/auth/me', {
+          const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
             headers: { 'Authorization': `Bearer ${storedToken}` }
           });
           if (response.ok) {
@@ -55,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true)
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

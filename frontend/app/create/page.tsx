@@ -10,9 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Search, ChevronLeft, ChevronRight, DollarSign, Loader2 } from "lucide-react"
 import Link from "next/link"
 import Header from "@/components/header"
-
-// API base URL
-const API_BASE_URL = "http://localhost:5000"
+import { API_BASE_URL } from "@/lib/config"
 
 // Ticker interface
 interface Ticker {

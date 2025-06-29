@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, UserPlus, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { API_BASE_URL } from "@/lib/config"
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -59,7 +60,7 @@ export default function SignUpPage() {
 
     // --- Backend API Call ---
     try {
-      const response = await fetch('http://localhost:5000/api/auth/signup', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

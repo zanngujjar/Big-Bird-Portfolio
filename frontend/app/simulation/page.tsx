@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import Link from "next/link"
 import Header from "@/components/header"
-
+import { API_BASE_URL } from "@/lib/config"
 // --- Constants ---
 const CANVAS_BG = "#111827"
 const AXIS_COLOR = "#9CA3AF"
@@ -15,7 +15,7 @@ const LINE_OPACITY = 0.35
 const LABEL_COLOR = "#9CA3AF"
 const LABEL_FONT = "12px sans-serif"
 const margin = { top: 20, right: 20, bottom: 40, left: 80 };
-const API_BASE_URL = "http://localhost:5000"
+
 
 // --- Helper Functions ---
 const formatPrice = (price: number) => {
@@ -54,7 +54,7 @@ export default function SimulationPage() {
 
         ctx.fillStyle = CANVAS_BG;
         ctx.fillRect(0, 0, w, h);
-        
+
         ctx.save();
         ctx.translate(margin.left, margin.top);
 
@@ -62,7 +62,7 @@ export default function SimulationPage() {
         ctx.lineWidth = 1;
         ctx.fillStyle = LABEL_COLOR;
         ctx.font = LABEL_FONT;
-        
+
         ctx.textAlign = "center";
         const totalYears = 5;
         for (let i = 0; i <= totalYears; i++) {
@@ -90,7 +90,7 @@ export default function SimulationPage() {
                 }
             }
         }
-        
+
         if (isFinite(minVal) && isFinite(maxVal) && maxVal !== minVal) {
             const initialY = ih - ((initialValueRef.current - minVal) / (maxVal - minVal)) * ih;
             ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.strokeStyle = AXIS_COLOR; ctx.lineWidth = 1;
@@ -125,7 +125,7 @@ export default function SimulationPage() {
     useEffect(() => {
         const canvas = canvasRef.current!
         const ctx = canvas.getContext("2d")!
-        
+
         const redrawAll = () => {
             if (!canvas) return;
             const dpr = window.devicePixelRatio || 1;
@@ -141,7 +141,7 @@ export default function SimulationPage() {
                 drawPath(ctx, canvas.clientWidth, canvas.clientHeight, path, color, displayMin, displayMax);
             });
         }
-        
+
         window.addEventListener('resize', redrawAll);
 
         const run = async () => {
@@ -173,7 +173,7 @@ export default function SimulationPage() {
                         }
                     })
                 );
-                
+
                 setStatusText("Running simulations...");
                 const worker = new Worker("/workers/monteCarloWorker.js", { type: "module" });
                 workerRef.current = worker;
@@ -197,15 +197,15 @@ export default function SimulationPage() {
                         batch.forEach((path: any[]) => {
                             const pathMin = Math.min(...path.map(p => p.value));
                             const pathMax = Math.max(...path.map(p => p.value));
-                            if(pathMin < minValRef.current) { minValRef.current = pathMin; scaleChanged = true; }
-                            if(pathMax > maxValRef.current) { maxValRef.current = pathMax; scaleChanged = true; }
-                             const r = 100 + Math.floor(Math.random() * 156);
-                             const g = 100 + Math.floor(Math.random() * 156);
-                             const b = 100 + Math.floor(Math.random() * 156);
-                             allPathsData.current.push({ path, color: `${r},${g},${b}` });
+                            if (pathMin < minValRef.current) { minValRef.current = pathMin; scaleChanged = true; }
+                            if (pathMax > maxValRef.current) { maxValRef.current = pathMax; scaleChanged = true; }
+                            const r = 100 + Math.floor(Math.random() * 156);
+                            const g = 100 + Math.floor(Math.random() * 156);
+                            const b = 100 + Math.floor(Math.random() * 156);
+                            allPathsData.current.push({ path, color: `${r},${g},${b}` });
                         });
 
-                        if (scaleChanged) { redrawAll(); } 
+                        if (scaleChanged) { redrawAll(); }
                         else {
                             const initial = initialValueRef.current;
                             const maxDeviation = Math.max(maxValRef.current - initial, initial - minValRef.current);
@@ -225,10 +225,10 @@ export default function SimulationPage() {
                         processAndNavigate(allPathsData.current, amount);
                     }
                 };
-                 worker.onerror = (e) => {
-                     console.error("Worker Error:", e);
-                     setStatusText(`Error: ${e.message}`);
-                 }
+                worker.onerror = (e) => {
+                    console.error("Worker Error:", e);
+                    setStatusText(`Error: ${e.message}`);
+                }
             } catch (e: any) {
                 console.error(e);
                 setStatusText(`Error: ${e.message}`);
@@ -243,8 +243,8 @@ export default function SimulationPage() {
 
     const processAndNavigate = (paths: { path: any[] }[], initialAmount: number) => {
         if (!paths || paths.length === 0) {
-             console.error("No simulation paths to process. Navigation aborted.");
-             return;
+            console.error("No simulation paths to process. Navigation aborted.");
+            return;
         }
 
         // **FIX:** This function now only saves the final values and initial amount, as expected by the results page.
@@ -257,21 +257,21 @@ export default function SimulationPage() {
 
     return (
         <div className="min-h-screen bg-black text-white">
-             <Header />
-             <div className="w-screen px-0 py-4 overflow-x-auto">
-                 <Card className="bg-gray-900 border-gray-800 mb-4">
-                     <CardHeader><CardTitle className="text-white">Simulation Progress</CardTitle></CardHeader>
-                     <CardContent>
-                         <div className="flex items-center gap-4">
+            <Header />
+            <div className="w-screen px-0 py-4 overflow-x-auto">
+                <Card className="bg-gray-900 border-gray-800 mb-4">
+                    <CardHeader><CardTitle className="text-white">Simulation Progress</CardTitle></CardHeader>
+                    <CardContent>
+                        <div className="flex items-center gap-4">
                             <Progress value={progress} className="w-full" />
                             <span className="text-gray-400 whitespace-nowrap">{statusText}</span>
-                         </div>
-                     </CardContent>
-                 </Card>
-                 <div className="bg-gray-900 border-gray-800" style={{ height: 500, minWidth: '1260px' }}>
-                     <canvas ref={canvasRef} className="w-full h-full" />
-                 </div>
-             </div>
-         </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <div className="bg-gray-900 border-gray-800" style={{ height: 500, minWidth: '1260px' }}>
+                    <canvas ref={canvasRef} className="w-full h-full" />
+                </div>
+            </div>
+        </div>
     )
 }

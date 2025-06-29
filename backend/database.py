@@ -6,7 +6,7 @@ import json
 from typing import List, Tuple, Optional, Dict, List
 
 class BigBird_portfolio_database:
-    def __init__(self, db_url: str = ""):
+    def __init__(self, db_url: str = os.getenv("DATABASE_URL")):
         """
         Initializes connection to the PostgreSQL database.
         It expects the database URL to be provided, preferably via an environment variable.

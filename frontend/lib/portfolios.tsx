@@ -2,6 +2,7 @@
 
 import { useState, useEffect, createContext, useContext, type ReactNode } from "react"
 import { useAuth } from "./auth"
+import { API_BASE_URL } from "./config";
 
 // This interface consistently uses camelCase for use throughout the frontend.
 export interface SavedPortfolio {
@@ -74,7 +75,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
       if (user && token) {
         setIsLoading(true);
         try {
-          const response = await fetch('http://localhost:5000/api/portfolios', {
+          const response = await fetch(`${API_BASE_URL}/api/portfolios`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (response.ok) {
@@ -102,10 +103,10 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     if (!token) {
       throw new Error("Authentication token is missing.");
     }
-    
+
     // The payload sent to the backend uses camelCase, as the Flask API endpoint expects.
     try {
-      const response = await fetch('http://localhost:5000/api/portfolios', {
+      const response = await fetch(`${API_BASE_URL}/api/portfolios`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -113,15 +114,15 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         },
         body: JSON.stringify(portfolio)
       });
-      
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Failed to save portfolio to the server.");
       }
-      
+
       // After a successful save, refetch the data to get the updated list.
       if (user && token) {
-        const listResponse = await fetch('http://localhost:5000/api/portfolios', {
+        const listResponse = await fetch(`${API_BASE_URL}/api/portfolios`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const listData = await listResponse.json();
@@ -129,7 +130,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
           setPortfolios(listData.data.map(formatPortfolioData) || []);
         }
       }
-      
+
       return data.portfolio_id;
     } catch (error) {
       console.error("Error saving portfolio:", error);
@@ -137,10 +138,10 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     }
   };
 
-    const deletePortfolio = async (id: string): Promise<void> => {
+  const deletePortfolio = async (id: string): Promise<void> => {
     if (!token) throw new Error("Not authenticated.");
     try {
-      const response = await fetch(`http://localhost:5000/api/portfolios/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/portfolios/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

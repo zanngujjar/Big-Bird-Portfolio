@@ -42,12 +42,12 @@ export default function Header({ showBackButton, backButtonText, backButtonHref 
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <img src="/favicon-32x32.png" alt="Big Bird Portfolios Logo" className="h-8 w-8" />
-            <span className="text-xl font-bold">Big Bird Portfolios</span>
+            <span className="text-l font-bold">Big Bird Portfolios</span>
           </Link>
 
           <div className="flex items-center gap-4">
             {showBackButton && backButtonHref && (
-              <Link href={backButtonHref}>
+              <Link href={backButtonHref} className="hidden sm:block">
                 <Button variant="outline" className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700">
                   {backButtonText || "Back"}
                 </Button>

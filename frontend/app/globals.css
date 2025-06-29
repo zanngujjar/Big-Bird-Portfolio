@@ -12,13 +12,33 @@ body {
   }
 }
 
-@layer components {
+.chart-card-content {
+  padding-top: 1.5rem;
+  /* equivalent to pt-6 */
+  padding-left: 0.5rem;
+  /* equivalent to px-2 */
+  padding-right: 0.5rem;
+  /* equivalent to px-2 */
+}
 
-  /* Custom utility for responsive padding in chart cards */
+/* For screens 640px and wider (Tailwind's 'sm' breakpoint) */
+@media (min-width: 640px) {
   .chart-card-content {
-    @apply pt-6 px-2 sm:px-4 md:p-6;
+    padding-left: 1rem;
+    /* equivalent to sm:px-4 */
+    padding-right: 1rem;
+    /* equivalent to sm:px-4 */
   }
 }
+
+/* For screens 768px and wider (Tailwind's 'md' breakpoint) */
+@media (min-width: 768px) {
+  .chart-card-content {
+    padding: 1.5rem;
+    /* equivalent to md:p-6 */
+  }
+}
+
 
 @layer base {
   :root {

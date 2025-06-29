@@ -333,7 +333,7 @@ function ResultsContent() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div><CardTitle className="text-white">Portfolio Value Projections</CardTitle><p className="text-gray-400">Range of potential outcomes over 5 years</p></div>
-                <Button variant="outline" size="sm" className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700" onClick={() => alert("Export functionality to be added!")}><Download className="h-4 w-4 mr-2" />Export Data</Button>
+                <Button variant="outline" size="sm" className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700" onClick={() => window.print()}><Download className="h-4 w-4 mr-2" />Export Data</Button>
               </div>
             </CardHeader>
             <CardContent>

@@ -8,11 +8,13 @@ import os
 import psycopg2
 
 app = Flask(__name__)
-frontend_url = "https://bigbirdportfolios.com" 
+allowed_origins = [
+    "https://big-bird-portfolio-frontend.onrender.com", # Your original Render frontend URL
+    "https://www.bigbirdportfolios.com"                  # Your NEW custom domain
+]
 
-# 2. Configure CORS to only allow requests for API endpoints
-#    and only from your specific frontend URL.
-CORS(app, resources={r"/api/*": {"origins": frontend_url}})
+# Configure CORS to allow requests ONLY from the origins in the list.
+CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
 
 # Initialize database connection
 db = BigBird_portfolio_database()

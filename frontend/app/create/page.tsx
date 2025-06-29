@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
+import { useSearchParams } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -21,7 +22,8 @@ interface Ticker {
 
 const ITEMS_PER_PAGE = 10
 
-export default function CreatePortfolio() {
+function CreatePortfolioContent() {
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("")
   const [portfolioAllocations, setPortfolioAllocations] = useState<Record<string, number>>({})
   const [portfolioAmount, setPortfolioAmount] = useState<number>(100000) // Default $100,000
@@ -38,7 +40,7 @@ export default function CreatePortfolio() {
         setLoading(true)
         const response = await fetch(`${API_BASE_URL}/api/tickers`)
         const data = await response.json()
-        
+
         if (data.success) {
           setTickers(data.data)
         } else {
@@ -54,6 +56,30 @@ export default function CreatePortfolio() {
 
     fetchTickers()
   }, [])
+
+  // Pre-fill form from URL parameters
+  useEffect(() => {
+    const amount = searchParams.get('portfolioAmount');
+    const lookback = searchParams.get('lookbackPeriod');
+    const allocationsStr = searchParams.get('allocations');
+
+    if (amount) {
+      setPortfolioAmount(Number(amount));
+    }
+    if (lookback) {
+      setLookbackPeriod(lookback);
+    }
+    if (allocationsStr) {
+      const newAllocations: Record<string, number> = {};
+      allocationsStr.split(',').forEach(a => {
+        const [ticker, percentage] = a.split(':');
+        if (ticker && percentage) {
+          newAllocations[ticker] = Number(percentage);
+        }
+      });
+      setPortfolioAllocations(newAllocations);
+    }
+  }, [searchParams]);
 
   // Filter tickers based on search term
   const filteredTickers = tickers.filter(
@@ -378,17 +404,17 @@ export default function CreatePortfolio() {
                     lookbackPeriod: Number(lookbackPeriod),
                     portfolioAmount: portfolioAmount
                   }
-                  
+
                   // Save to localStorage as backup
                   localStorage.setItem('portfolioConfig', JSON.stringify(portfolioConfig))
-                  
+
                   // Navigate with URL parameters
                   const params = new URLSearchParams({
                     allocations: JSON.stringify(portfolioAllocations),
                     lookback: lookbackPeriod,
                     amount: portfolioAmount.toString()
                   })
-                  
+
                   window.location.href = `/simulation?${params.toString()}`
                 }}
               >
@@ -399,5 +425,13 @@ export default function CreatePortfolio() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CreatePortfolio() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreatePortfolioContent />
+    </Suspense>
   )
 }

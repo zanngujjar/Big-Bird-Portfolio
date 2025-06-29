@@ -8,7 +8,11 @@ import os
 import psycopg2
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for frontend integration
+frontend_url = "https://bigbirdportfolios.com" 
+
+# 2. Configure CORS to only allow requests for API endpoints
+#    and only from your specific frontend URL.
+CORS(app, resources={r"/api/*": {"origins": frontend_url}})
 
 # Initialize database connection
 db = BigBird_portfolio_database()

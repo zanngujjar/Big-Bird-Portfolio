@@ -38,41 +38,41 @@ export default function Header({ showBackButton, backButtonText, backButtonHref 
 
   return (
     <header className="border-b border-gray-800">
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-2 sm:px-4 py-4">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <img src="/favicon-32x32.png" alt="Big Bird Portfolios Logo" className="h-8 w-8" />
-            <span className="text-l font-bold">Big Bird Portfolios</span>
+            <span className="text-l font-bold hidden sm:block">Big Bird Portfolios</span>
           </Link>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {showBackButton && backButtonHref && (
-              <Link href={backButtonHref} className="hidden sm:block">
-                <Button variant="outline" className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700">
+              <Link href={backButtonHref}>
+                <Button variant="outline" className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700 text-xs sm:text-sm px-2 sm:px-4">
                   {backButtonText || "Back"}
                 </Button>
               </Link>
             )}
 
             {user ? (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4">
                 <Link href="/my-portfolios">
                   <Button variant="ghost" className="text-white hover:bg-gray-800">
-                    <FolderOpen className="h-4 w-4 mr-2" />
-                    My Portfolios
+                    <FolderOpen className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">My Portfolios</span>
                   </Button>
                 </Link>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-2 hover:bg-gray-800">
+                    <Button variant="ghost" className="flex items-center gap-1 sm:gap-2 hover:bg-gray-800">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.username} />
                         <AvatarFallback className="bg-blue-600 text-white text-sm">
                           {getUserInitials(user)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-white font-medium">{user.username}</span>
+                      <span className="text-white font-medium hidden sm:inline">{user.username}</span>
                       <ChevronDown className="h-4 w-4 text-gray-400" />
                     </Button>
                   </DropdownMenuTrigger>

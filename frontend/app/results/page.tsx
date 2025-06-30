@@ -286,7 +286,7 @@ function ResultsContent() {
                 <h1 className="text-3xl lg:text-4xl font-bold mb-4">Portfolio Analysis Results</h1>
                 <p className="text-gray-300 text-lg">Complete analysis of 1,000 Monte Carlo simulations over 5 years</p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 {isNewSimulation && portfolioConfig && summary && riskMetrics && simulationData && (
                   <SavePortfolioDialog
                     portfolioData={{
@@ -312,7 +312,7 @@ function ResultsContent() {
                 )}
                 <Button
                   variant="outline"
-                  className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+                  className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700 w-full sm:w-auto"
                   onClick={handleRunAgain}
                 >
                   <RotateCcw className="h-4 w-4 mr-2" />
@@ -330,15 +330,15 @@ function ResultsContent() {
 
           <Card className="bg-gray-900 border-gray-800 mb-8">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div><CardTitle className="text-white">Portfolio Value Projections</CardTitle><p className="text-gray-400">Range of potential outcomes over 5 years</p></div>
-                <Button variant="outline" size="sm" className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700" onClick={() => window.print()}><Download className="h-4 w-4 mr-2" />Export Data</Button>
-              </div>
+                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                 <div><CardTitle className="text-white">Portfolio Value Projections</CardTitle><p className="text-gray-400">Range of potential outcomes over 5 years</p></div>
+                 <Button variant="outline" size="sm" className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700 w-full sm:w-auto" onClick={() => window.print()}><Download className="h-4 w-4 mr-2" />Export Data</Button>
+               </div>
             </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-[250px] md:h-[400px] lg:h-[500px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                         <CardContent className="px-2 sm:px-6">
+               <ChartContainer config={chartConfig} className="h-[250px] md:h-[400px] lg:h-[500px]">
+                 <ResponsiveContainer width="100%" height="100%">
+                   <AreaChart data={chartData} margin={{ top: 20, right: 5, left: 5, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                     <XAxis dataKey="day" stroke="#9CA3AF" tick={{ fill: "#9CA3AF" }} tickFormatter={(value) => `${(value / 252).toFixed(0)}Y`} interval={251} />
                     <YAxis stroke="#9CA3AF" tick={{ fill: "#9CA3AF" }} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} domain={['dataMin', 'dataMax']} />

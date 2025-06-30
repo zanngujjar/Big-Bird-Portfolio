@@ -39,6 +39,39 @@ body {
   }
 }
 
+/* Ensure charts stay within viewport on mobile */
+.chart-container {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 640px) {
+  .chart-container .recharts-wrapper {
+    overflow: visible !important;
+  }
+  
+  .chart-container .recharts-surface {
+    overflow: visible !important;
+  }
+  
+  /* Mobile chart adjustments */
+  .mobile-chart {
+    margin-left: -10px !important;
+    margin-right: -10px !important;
+  }
+  
+  /* Ensure chart text doesn't overflow */
+  .chart-container text {
+    font-size: 10px !important;
+  }
+  
+  /* Hide chart overflow on mobile */
+  .chart-container {
+    overflow-x: hidden !important;
+    max-width: 100vw;
+  }
+}
+
 
 @layer base {
   :root {

@@ -335,13 +335,26 @@ function ResultsContent() {
                  <Button variant="outline" size="sm" className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700 w-full sm:w-auto" onClick={() => window.print()}><Download className="h-4 w-4 mr-2" />Export Data</Button>
                </div>
             </CardHeader>
-                         <CardContent className="px-2 sm:px-6">
+                         <CardContent className="px-1 sm:px-6">
                <ChartContainer config={chartConfig} className="h-[250px] md:h-[400px] lg:h-[500px]">
                  <ResponsiveContainer width="100%" height="100%">
-                   <AreaChart data={chartData} margin={{ top: 20, right: 5, left: 5, bottom: 20 }}>
+                   <AreaChart data={chartData} margin={{ top: 15, right: 3, left: 3, bottom: 15 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis dataKey="day" stroke="#9CA3AF" tick={{ fill: "#9CA3AF" }} tickFormatter={(value) => `${(value / 252).toFixed(0)}Y`} interval={251} />
-                    <YAxis stroke="#9CA3AF" tick={{ fill: "#9CA3AF" }} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} domain={['dataMin', 'dataMax']} />
+                                         <XAxis 
+                       dataKey="day" 
+                       stroke="#9CA3AF" 
+                       tick={{ fill: "#9CA3AF", fontSize: "clamp(10px, 2.5vw, 12px)" }} 
+                       tickFormatter={(value) => `${(value / 252).toFixed(0)}Y`} 
+                       interval="preserveStartEnd"
+                       minTickGap={20}
+                     />
+                                         <YAxis 
+                       stroke="#9CA3AF" 
+                       tick={{ fill: "#9CA3AF", fontSize: "clamp(10px, 2.5vw, 12px)" }} 
+                       tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} 
+                       domain={['dataMin', 'dataMax']}
+                       width={60}
+                     />
                     <ChartTooltip content={<ChartTooltipContent indicator="line" />} labelFormatter={(value) => `Best & Worst Case`} formatter={(value: number, name: keyof typeof chartConfig) => [formatCurrency(value), chartConfig[name]?.label]} />
                     <Area type="monotone" dataKey="percentile_95" stroke="var(--color-percentile_95)" fill="var(--color-percentile_95)" fillOpacity={0.1} strokeWidth={1.5} name="percentile_95" />
                     <Area type="monotone" dataKey="percentile_5" stroke="var(--color-percentile_5)" fill="#111827" fillOpacity={1} strokeWidth={1.5} name="percentile_5" />
